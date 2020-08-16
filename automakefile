@@ -1,0 +1,294 @@
+#!/bin/bash
+
+##
+## EPITECH PROJECT, 2020
+## automakefile
+## File description:
+## head
+##
+
+if [ $# -lt 1 ]; then
+    printf "Not enough arg." >&2
+    exit 84
+fi
+
+if [ ! -e $1 ]; then
+    echo "Directory does not exist." >&2
+    exit 84
+fi
+
+
+
+create_file()
+{
+    printf "##\n## EPITECH PROJECT, 2020\n\
+## Makefile\n\
+## File description:\n\
+## compil\n##\n\n" > "$dir_path/Makefile"
+
+
+    if [ ${#f_cflags[@]} != 0 ]; then
+        printf "CFLAGS\t=\t$f_cflags\n\n" >> "$dir_path/Makefile"
+    fi
+
+
+
+    if [ ! -z $f_srcdir ]; then
+        printf "SRCDIR\t=\t$f_srcdir\n\n" >> "$dir_path/Makefile"
+    fi
+
+
+
+    printf 'SRC\t=\t'>> "$dir_path/Makefile"
+    for ((i = 0; count -$i; i++))
+    do
+        if [ $i == 0 ]; then
+            if [ ! -z $f_srcdir ]; then
+                printf '${SRCDIR}/'${s_files[$i]}'\t\\''\n' >> "$dir_path/Makefile"
+            else
+                printf "${s_files[$i]}" >> "$dir_path/Makefile"
+                printf '\t\\\n' >> "$dir_path/Makefile"
+            fi
+        else
+            if [ ! -z $f_srcdir ]; then
+                printf '\t\t${SRCDIR}/'${s_files[$i]}'\t\\''\n' >> "$dir_path/Makefile"
+            else
+                printf "\t\t${s_files[$i]}" >> "$dir_path/Makefile"
+                printf '\t\\\n' >> "$dir_path/Makefile"
+            fi
+        fi
+    done
+    printf '\n' >> "$dir_path/Makefile"
+
+
+
+    printf 'OBJ\t\t=\t$(SRC:.c=.o)\n\n' >> "$dir_path/Makefile"
+
+
+
+   if [ ${#f_exec[@]} != 0 ]; then
+        printf "NAME\t=\t$f_exec\n\n" >> "$dir_path/Makefile"
+    fi
+
+
+
+   if [ ${#f_ldflags[@]} != 0 ]; then
+        printf "LDFLAGS\t=\t$f_ldflags\n\n" >> "$dir_path/Makefile"
+    fi
+
+
+
+    printf 'RM\t=\trm -f\n\n' >> "$dir_path/Makefile"
+
+
+
+    printf 'BACK\t=\t '$f_backdir'\n\n' >> "$dir_path/Makefile"
+
+
+
+    printf 'VERSION\t=\t 0\n\n' >> "$dir_path/Makefile"
+
+
+
+    printf 'all:\t$(NAME)\n\n$(NAME):\t$(OBJ)\n\t'$f_cc' -o $(NAME) $(OBJ)' >> "$dir_path/Makefile"
+    if [ ${#f_ldflags[@]} != 0 ]; then
+        printf '$(LDFLAGS)\n\n' >> "$dir_path/Makefile"
+    else
+        printf '\n\n' >> "$dir_path/Makefile"
+    fi
+
+
+
+    printf 'clean:\n\t' >> "$dir_path/Makefile"
+    printf '$(RM) $(OBJ)\n\t' >> "$dir_path/Makefile"
+    printf '$(RM) *.gcno\n\t' >> "$dir_path/Makefile"
+    printf '$(RM) *.gcda\n\n' >> "$dir_path/Makefile"
+
+
+
+    printf 'fclean: clean\n\t' >> "$dir_path/Makefile"
+    printf '$(RM) $(NAME)\n\n' >> "$dir_path/Makefile"
+
+
+
+    printf 're:\tfclean all\n\n' >> "$dir_path/Makefile"
+
+
+
+    if [ ! -e $dir_path/$f_backdir ]; then
+        mkdir $dir_path/$f_backdir
+        printf "1" > $dir_path/$f_backdir/version.txt
+    fi
+
+
+
+    printf "archive:\n\t" >> "$dir_path/Makefile"
+    printf "@printf '0' >> "'$(BACK)/version.txt' >> "$dir_path/Makefile"
+    printf "\n\t@wc -m "'$(BACK)/version.txt > xxx; \' >> "$dir_path/Makefile"
+    printf "\n\t"'read characters line < xxx; \' >> "$dir_path/Makefile"
+    printf "\n\t$f_zip $f_zflags $f_backdir/back_"'$$characters $(SRC)'"\n\n" >> "$dir_path/Makefile"
+
+
+
+    printf 'revert:\n\t' >> "$dir_path/Makefile"
+    printf '$(RM) $(OBJ)\n\t' >> "$dir_path/Makefile"
+    printf '$(RM) $(SRC)\n\t' >> "$dir_path/Makefile"
+    printf "@wc -m "'$(BACK)/version.txt > xxx; \' >> "$dir_path/Makefile"
+    printf "\n\t"'read characters line < xxx; \' >> "$dir_path/Makefile"
+    printf "$f_unzip $f_uzflags $f_backdir/back_"'$$characters'"\n\n" >> "$dir_path/Makefile"
+
+
+
+    printf "num:\n\t" >> "$dir_path/Makefile"
+    printf "@printf 'version : '" >> "$dir_path/Makefile"
+    printf "\n\t@wc -m "'$(BACK)/version.txt'" | awk '{printf "'$$1 ".0\\n"}'"'\n\n" >> "$dir_path/Makefile"
+
+
+
+    printf "delete:\n\t" >> "$dir_path/Makefile"
+    printf "@wc -m "'$(BACK)/version.txt > xxx; \' >> "$dir_path/Makefile"
+    printf "\n\t"'read characters line < xxx; \' >> "$dir_path/Makefile"
+    printf "\n\t"'$(RM)'" $f_backdir/back_"'$$characters'"\n" >> "$dir_path/Makefile"
+    printf "\t@sed -i '"'$$ s/.$$//'"'"' $(BACK)/version.txt' >> "$dir_path/Makefile"
+
+
+
+    chmod 777 "$dir_path/Makefile"
+}
+
+
+
+
+word_find()
+{
+#tr ';' ';' < $f_path > output_tr.txt
+while IFS=';' read -ra line; do
+
+    if [[ ${line[0]} == "SOURCES_DIR" ]]; then
+#        if [ ! -e "$dir_path/${line[1]}" ]; then
+#            printf "Directory does not exist for ${line[0]}." >&2
+#            exit 84
+#        fi
+        f_srcdir=${line[1]}
+    fi
+
+    if [[ ${line[0]} == "HEADERS_DIR" ]]; then
+#        if [ ! -e "$dir_path/${line[1]}" ]; then
+#            printf "Directory does not exist for ${line[0]}." >&2
+#            exit 84
+#        fi
+        f_headdir=${line[1]}
+    fi
+
+    if [[ ${line[0]} == "LIBS_DIR" ]]; then
+#        if [ ! -e "$dir_path/${line[1]}" ]; then
+#            printf "Directory does not exist for ${line[0]}." >&2
+#            exit 84
+#        fi
+        f_libdir=${line[1]}
+    fi
+
+
+    if [[ ${line[0]} == "EXEC" ]]; then
+        f_exec=${line[1]}
+    fi
+
+
+    if [[ ${line[0]} == "CC" ]]; then
+        f_cc=${line[1]}
+    fi
+
+
+    if [[ ${line[0]} == "CFLAGS" ]]; then
+        f_cflags=${line[1]}
+    fi
+
+
+    if [[ ${line[0]} == "LDFLAGS" ]]; then
+        ff_lflags=${line[1]}
+    fi
+
+
+    if [[ ${line[0]} == *.c ]]; then
+        s_files[count]=${line[0]}
+        ((count++))
+    fi
+
+
+    if [[ ${line[0]} == "BCK_DIR" ]]; then
+        f_backdir=${line[1]}
+    fi
+
+
+   if [[ ${line[0]} == "ZIP" ]]; then
+        f_zip=${line[1]}
+    fi
+
+
+   if [[ ${line[0]} == "ZIPFLAGS" ]]; then
+        f_zflags=${line[1]}
+    fi
+
+
+   if [[ ${line[0]} == "UNZIP" ]]; then
+        f_unzip=${line[1]}
+    fi
+
+
+   if [[ ${line[0]} == "UNZIPFLAGS" ]]; then
+        f_uzflags=${line[1]}
+    fi
+
+
+done < $f_path
+}
+
+check_if_flags_null()
+{
+    if [ -z $f_cc ]; then
+        f_cc="gcc"
+    fi
+
+    if [ -z $f_exec ]; then
+        f_exec="a.out"
+    fi
+
+#and for other ? or not
+}
+
+
+
+dir_path=$1
+dir_path="${dir_path%/*}"
+f_path=$1
+
+
+s_files=()
+count=0;
+f_exec=()
+f_cc=()
+f_cflags=()
+f_ldflags=()
+f_libdir=()
+f_srcdir=()
+f_headdir=()
+
+f_backdir=()
+f_zip=()
+f_zflags=()
+f_unzip=()
+f_uzflags=()
+
+if grep -Fq "PROJECT_DIR" $f_path
+then
+    cat $f_path > save.txt
+    printf '\nlast;line' >> $f_path
+    word_find
+    check_if_flags_null
+    create_file
+    cat save.txt > $f_path
+    rm save.txt
+else
+    printf 'Invalid file.' >&2
+    exit 84
+fi
